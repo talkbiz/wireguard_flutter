@@ -65,16 +65,16 @@ class WireguardFlutterPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
         return havePermission
     }
 
-    override fun onAttachedToActivity(activityPluginBinding: ActivityPluginBinding) {
-        this.activity = activityPluginBinding.activity as FlutterActivity
+    override fun onAttachedToActivity(binding: ActivityPluginBinding) {
+        this.activity = binding.activity;
     }
 
     override fun onDetachedFromActivityForConfigChanges() {
         this.activity = null
     }
 
-    override fun onReattachedToActivityForConfigChanges(activityPluginBinding: ActivityPluginBinding) {
-        this.activity = activityPluginBinding.activity as FlutterActivity
+    override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
+        this.activity = binding.activity;
     }
 
     override fun onDetachedFromActivity() {
