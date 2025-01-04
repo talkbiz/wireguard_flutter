@@ -92,6 +92,11 @@ class WireGuardFlutterLinux extends WireGuardFlutterInterface {
   Stream<VpnStage> get vpnStageSnapshot => _stageController.stream;
 
   @override
+  Stream<Map<String, dynamic>> getConnectionStats(String tunnelName) {
+    return Stream.empty();
+  }
+
+  @override
   Future<void> refreshStage() async {
     if (await isConnected()) {
       _setStage(VpnStage.connected);

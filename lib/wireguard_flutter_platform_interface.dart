@@ -1,6 +1,8 @@
 abstract class WireGuardFlutterInterface {
   Stream<VpnStage> get vpnStageSnapshot;
 
+  Stream<Map<String, dynamic>> getConnectionStats(String tunnelName);
+
   Future<void> initialize({required String interfaceName});
 
   Future<void> startVpn({

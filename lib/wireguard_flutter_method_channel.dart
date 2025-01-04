@@ -9,6 +9,8 @@ class WireGuardFlutterMethodChannel extends WireGuardFlutterInterface {
   static const _eventChannelVpnStage =
       'billion.group.wireguard_flutter/wgstage';
   static const _eventChannel = EventChannel(_eventChannelVpnStage);
+  static const _eventChannelStats = 'billion.group.wireguard_flutter/wgstats';
+  static const _eventStatsChannel = EventChannel(_eventChannelStats);
 
   @override
   Stream<VpnStage> get vpnStageSnapshot =>
@@ -20,6 +22,13 @@ class WireGuardFlutterMethodChannel extends WireGuardFlutterInterface {
                     orElse: () => VpnStage.noConnection,
                   ),
           );
+
+  @override
+  Stream<Map<String, dynamic>> getConnectionStats(String tunnelName) {
+    return _eventStatsChannel
+        .receiveBroadcastStream(tunnelName)
+        .map((event) => Map<String, dynamic>.from(event));
+  }
 
   @override
   Future<void> initialize({required String interfaceName}) {

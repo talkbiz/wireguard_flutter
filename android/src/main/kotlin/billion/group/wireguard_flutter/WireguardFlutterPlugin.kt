@@ -40,6 +40,7 @@ class WireguardFlutterPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
     PluginRegistry.ActivityResultListener {
     private lateinit var channel: MethodChannel
     private lateinit var events: EventChannel
+    private lateinit var eventChannelStats: EventChannel
     private lateinit var tunnelName: String
     private val futureBackend = CompletableDeferred<Backend>()
     private var vpnStageSink: EventChannel.EventSink? = null
@@ -81,9 +82,38 @@ class WireguardFlutterPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
         this.activity = null
     }
 
+    private val statsStreamHandler = object : EventChannel.StreamHandler {
+        private var job: Job? = null
+
+        override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
+            job = scope.launch {
+                while (isActive) {
+                    try {
+                        val tunnelName = arguments as? String ?: ""
+                        val backend = futureBackend.await()
+                        val stats = backend.getStatistics(tunnel(tunnelName))
+                        val data = mapOf(
+                            "tx" to stats.totalTx(),
+                            "rx" to stats.totalRx()
+                        )
+                        events?.success(data)
+                    } catch (e: Throwable) {
+                        events?.error("ERROR", e.message, null)
+                    }
+                    delay(1000)  // Adjust the delay as needed
+                }
+            }
+        }
+
+        override fun onCancel(arguments: Any?) {
+            job?.cancel()
+        }
+    }
+
     override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         channel = MethodChannel(flutterPluginBinding.binaryMessenger, METHOD_CHANNEL_NAME)
         events = EventChannel(flutterPluginBinding.binaryMessenger, METHOD_EVENT_NAME)
+        eventChannelStats = EventChannel(flutterPluginBinding.binaryMessenger, "billion.group.wireguard_flutter/wgstats")
         context = flutterPluginBinding.applicationContext
 
         scope.launch(Dispatchers.IO) {
@@ -107,6 +137,7 @@ class WireguardFlutterPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
                 vpnStageSink = null
             }
         })
+        eventChannelStats.setStreamHandler(statsStreamHandler)
 
     }
 

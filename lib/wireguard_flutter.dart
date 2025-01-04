@@ -33,6 +33,10 @@ class WireGuardFlutter extends WireGuardFlutterInterface {
   @override
   Stream<VpnStage> get vpnStageSnapshot => _instance.vpnStageSnapshot;
 
+  Stream<Map<String, dynamic>> getConnectionStats(String tunnelName) {
+    return _instance.getConnectionStats(tunnelName);
+  }
+
   @override
   Future<void> initialize({required String interfaceName}) {
     return _instance.initialize(interfaceName: interfaceName);
